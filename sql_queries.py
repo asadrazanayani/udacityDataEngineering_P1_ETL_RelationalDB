@@ -8,17 +8,13 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 
 # CREATE TABLES
 
-songplay_table_create = ("""
-    CREATE TABLE IF NOT EXISTS songplays
-    (songplay_id int PRIMARY KEY, 
-    start_time date REFERENCES time(start_time), 
-    user_id int NOT NULL REFERENCES users(user_id), 
-    level text, 
-    song_id text REFERENCES songs(song_id), 
-    artist_id text REFERENCES artists(artist_id), 
-    session_id int, 
-    location text, 
-    user_agent text)
+artist_table_create = ("""
+    CREATE TABLE IF NOT EXISTS artists
+    (artist_id text PRIMARY KEY,
+     name text NOT NULL, 
+     location text, 
+     lattitude float, 
+     longitude float)
 """)
 
 user_table_create = ("""
@@ -39,18 +35,10 @@ song_table_create = ("""
     duration float NOT NULL)
 """)
 
-artist_table_create = ("""
-    CREATE TABLE IF NOT EXISTS artists
-    (artist_id text PRIMARY KEY,
-     name text NOT NULL, 
-     location text, 
-     lattitude float, 
-     longitude float)
-""")
 
 time_table_create = ("""
     CREATE TABLE IF NOT EXISTS time
-    (start_time date PRIMARY KEY,
+    (start_time timestamp,
      hour int, 
      day int, 
      week int, 
@@ -59,13 +47,32 @@ time_table_create = ("""
      weekday text)
 """)
 
+songplay_table_create = ("""
+    CREATE TABLE IF NOT EXISTS songplays
+    (songplay_id SERIAL,
+    start_time timestamp, 
+    user_id int NOT NULL, 
+    level text, 
+    song_id text, 
+    artist_id text, 
+    session_id int, 
+    location text, 
+    user_agent text,
+    PRIMARY KEY (songplay_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id),
+    FOREIGN KEY (song_id) REFERENCES songs (song_id),
+    FOREIGN KEY (artist_id) REFERENCES artists (artist_id)
+    )
+""")
+
+
+
 # INSERT RECORDS
 
 songplay_table_insert = ("""
     INSERT INTO songplays
-    (songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-    ON CONFLICT (songplay_id) DO NOTHING;
+    (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
 """)
 
 user_table_insert = ("""
@@ -78,8 +85,7 @@ user_table_insert = ("""
 song_table_insert = ("""
     INSERT INTO songs
     (song_id, title, artist_id, year, duration)
-    VALUES (%s, %s, %s, %s, %s)
-    ON CONFLICT (song_id) DO NOTHING;
+    VALUES (%s, %s, %s, %s, %s);
 """)
 
 artist_table_insert = ("""
@@ -93,8 +99,7 @@ artist_table_insert = ("""
 time_table_insert = ("""
     INSERT INTO time
     (start_time, hour, day, week, month, year, weekday)
-    VALUES (%s, %s, %s, %s, %s, %s, %s)
-    ON CONFLICT (start_time) DO NOTHING;
+    VALUES (%s, %s, %s, %s, %s, %s, %s);
 """)
 
 # FIND SONGS
@@ -108,6 +113,5 @@ song_select = ("""
 """)
 
 # QUERY LISTS
-
 create_table_queries = [user_table_create, artist_table_create, song_table_create, time_table_create, songplay_table_create]
 drop_table_queries = [user_table_drop, artist_table_drop, song_table_drop, time_table_drop, songplay_table_drop]
